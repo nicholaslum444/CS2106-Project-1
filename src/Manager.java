@@ -6,6 +6,7 @@ import java.util.Scanner;
 public class Manager {
 	
 	private static class ProcessPair {
+		
 		Process mProcess;
 		int mUnits;
 		public ProcessPair(Process process, int units) {
@@ -20,6 +21,7 @@ public class Manager {
 	}
 	
 	private static class ResourcePair {
+		
 		Resource mResource;
 		int mUnits;
 		public ResourcePair(Resource r, int units) {
@@ -85,7 +87,6 @@ public class Manager {
 
 		public void attach(Process p, int unitsToAttach) {
 			if (unitsToAttach > mUnitsTotal) {
-				//println("fail, request more units than total");
 				print("error");
 				noError = false;
 			} else {
@@ -93,11 +94,9 @@ public class Manager {
 					int unitsCurrentlyOccupied = mProcessesAttached.get(p.mName).mUnits;
 					int unitsPotentialOccupied = unitsCurrentlyOccupied + unitsToAttach;
 					if (unitsPotentialOccupied > mUnitsTotal) {
-						//println("fail, total requested from this process is more than total of resource");
 						print("error");
 						noError = false;
 					} else if (unitsToAttach > mUnitsAvailable) {
-						//println("block, requesting more than available");
 						block(p, unitsToAttach);
 					} else {
 						mProcessesAttached.put(p.mName, new ProcessPair(p, unitsPotentialOccupied));
@@ -105,7 +104,6 @@ public class Manager {
 						p.attachResource(this, unitsToAttach);
 					}
 				} else if (unitsToAttach > mUnitsAvailable) {
-					//println("block, requesting more than available");
 					block(p, unitsToAttach);
 				} else {
 					mProcessesAttached.put(p.mName, new ProcessPair(p, unitsToAttach));
@@ -113,17 +111,14 @@ public class Manager {
 					p.attachResource(this, unitsToAttach);
 				}
 			}
-			//println(toString());
 		}
 		
 		public void release(Process p, int unitsToRelease) {
 			if (unitsToRelease > mUnitsTotal) {
-				//println("fail, releasing more than total units");
 				print("error");
 				noError = false;
 			} else {
 				if (!mProcessesAttached.containsKey(p.mName)) {
-					//println("fail, releasing from a resource that isnt held");
 					print("error");
 					noError = false;
 				} else {
@@ -133,7 +128,6 @@ public class Manager {
 						println("fail, releasing more units than held");
 					} else {
 						if (unitsStillOccupied > 0) {
-						// this one still got units left, must keep there
 						mProcessesAttached.put(p.mName, new ProcessPair(p, unitsStillOccupied));
 						}
 						deallocateUnits(unitsToRelease);
@@ -141,9 +135,7 @@ public class Manager {
 					}
 				}
 			}
-			// now check if anyone on the block list can get the resource
 			updateBlockedList();
-			//println(toString());
 		}
 		
 		public void allocateUnits(int unitsRequested) {
@@ -374,10 +366,8 @@ public class Manager {
 	private static void runRequest(String[] cmdArray) {
 		Process requestingProcess = runningProcess;
 		String resourceName = cmdArray[1];
-		//println(resourceName);
 		Resource requestedResource = allResources.get(resourceName);
 		int requestedUnits = Integer.parseInt(cmdArray[2]);
-		//allocateResource(requestingProcess, requestedResource, requestedUnits);
 		requestedResource.attach(requestingProcess, requestedUnits);
 		reschedule();
 	}
@@ -385,10 +375,8 @@ public class Manager {
 	private static void runRelease(String[] cmdArray) {
 		Process targetProcess = runningProcess;
 		String resourceName = cmdArray[1];
-		//println(resourceName);
 		Resource targetResource = allResources.get(resourceName);
 		int targetUnits = Integer.parseInt(cmdArray[2]);
-		//releaseResource(targetProcess, targetResource, targetUnits);
 		targetResource.release(targetProcess, targetUnits);
 		reschedule();
 	}
@@ -407,7 +395,6 @@ public class Manager {
 	}
 	
 	private static void destroyBranch(Process p) {
-		//println(p.info());
 		for (Process pc : p.mChildren) {
 			destroyBranch(pc);
 		}
@@ -445,13 +432,12 @@ public class Manager {
 		// switch current task with it if highest priority > own priority.
 		Process nextInLine = readyList.checkNext();
 		if (nextInLine == null && runningProcess == null) {
-			//println("There is no next process. Program will exit.");
 			print("error");
 			noError = false;
 		} else if (runningProcess == null) {
 			runningProcess = readyList.getNext();
 		} else if (nextInLine == null) {
-			// do nth.
+			// do nothing.
 		} else if (runningProcess.mState == State.BLOCKED) {
 			runningProcess = readyList.getNext();
 		} else if (runningProcess.mPriority < nextInLine.mPriority) {
