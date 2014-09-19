@@ -125,7 +125,7 @@ public class Manager {
 					int unitsOccupied = mProcessesAttached.remove(p.mName).mUnits;
 					int unitsStillOccupied = unitsOccupied - unitsToRelease;
 					if (unitsStillOccupied < 0) {
-						println("fail, releasing more units than held");
+						println("error");
 					} else {
 						if (unitsStillOccupied > 0) {
 						mProcessesAttached.put(p.mName, new ProcessPair(p, unitsStillOccupied));
@@ -136,6 +136,11 @@ public class Manager {
 				}
 			}
 			updateBlockedList();
+		}
+		
+		public void removeFromBlockedList(Process p) {
+			ProcessPair pp = mProcessesBlocked.remove(p.mName);
+			p.removeFromBlockedList(this);
 		}
 		
 		public void allocateUnits(int unitsRequested) {
@@ -194,6 +199,10 @@ public class Manager {
 		}
 		
 		public void releaseAllResources() {
+			if (mResourceBlockedOn != null) {
+				mResourceBlockedOn.removeFromBlockedList(this);
+			}
+			
 			if (mResourcesAttached.isEmpty()) {
 				return;
 			} else {
@@ -211,10 +220,14 @@ public class Manager {
 		}
 		
 		public void unblockOnResource(Resource r) {
+			removeFromBlockedList(r);
+			readyList.insert(this);
+		}
+		
+		public void removeFromBlockedList(Resource r) {
 			mState = State.READY;
 			mResourceBlockedOn = null;
 			mUnitsBlockedOn = 0;
-			readyList.insert(this);
 		}
 
 		@Override
@@ -291,10 +304,6 @@ public class Manager {
 	private static boolean noError = true;
 
 	public static void main(String[] args) {
-		// add the 4 resources R1-4
-		for (int i = 1; i < 5; i++) {
-			allResources.put("r"+i, new Resource("r"+i, i));
-		}
 		runInit();
 		printRunningProcess();
 		while (true) {
@@ -428,6 +437,7 @@ public class Manager {
 			}
 		}
 		p.releaseAllResources();
+		Resource r = p.mResourceBlockedOn;
 		readyList.remove(p.mName);
 		allProcesses.remove(p.mName);
 	}
@@ -441,13 +451,25 @@ public class Manager {
 		String name = cmdArray[1];
 		int priority = Integer.parseInt(cmdArray[2]);
 		Process newProcess = new Process(name, priority, runningProcess);
+		if (allProcesses.containsKey(name)) {
+			print("error");
+			noError = false;
+			return;
+		}
 		allProcesses.put(name, newProcess);
 		readyList.insert(newProcess);
 		reschedule();
 	}
 
 	private static void runInit() {
+		allResources.clear();
+		allProcesses.clear();
 		readyList = new ReadyList();
+		
+		// add the 4 resources R1-4
+		for (int i = 1; i < 5; i++) {
+			allResources.put("r"+i, new Resource("r"+i, i));
+		}
 		Process init = new Process("init", 0, null);
 		allProcesses.put(init.mName, init);
 		runningProcess = init;

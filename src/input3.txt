@@ -1,0 +1,7 @@
+cr x 2
+cr y 2
+req r4 4
+to
+req r4 4
+de y
+quit
