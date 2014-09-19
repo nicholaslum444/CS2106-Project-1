@@ -298,12 +298,17 @@ public class Manager {
 		runInit();
 		printRunningProcess();
 		while (true) {
-			String input = sc.nextLine();
-			parseInput(input);
-			if (noError) {
-				printRunningProcess();
+			try {
+				String input = sc.nextLine();
+				parseInput(input);
+				if (noError) {
+					printRunningProcess();
+				}
+				noError = true;
+			} catch (Exception e) {
+				print("error");
+				noError = true;
 			}
-			noError = true;
 		}
 	}
 
@@ -364,6 +369,11 @@ public class Manager {
 	}
 
 	private static void runRequest(String[] cmdArray) {
+		if (cmdArray.length < 3) {
+			print("error");
+			noError = false;
+			return;
+		}
 		Process requestingProcess = runningProcess;
 		String resourceName = cmdArray[1];
 		Resource requestedResource = allResources.get(resourceName);
@@ -373,6 +383,11 @@ public class Manager {
 	}
 
 	private static void runRelease(String[] cmdArray) {
+		if (cmdArray.length < 3) {
+			print("error");
+			noError = false;
+			return;
+		}
 		Process targetProcess = runningProcess;
 		String resourceName = cmdArray[1];
 		Resource targetResource = allResources.get(resourceName);
@@ -382,10 +397,16 @@ public class Manager {
 	}
 
 	private static void runDestroy(String[] cmdArray) {
+		if (cmdArray.length < 2) {
+			print("error");
+			noError = false;
+			return;
+		}
 		String name = cmdArray[1];
 		Process doomedProcess = allProcesses.get(name);
 		if (doomedProcess == null) {
 			print("error");
+			noError = false;
 		} else {
 			doomedProcess.releaseAllResources();
 			destroyBranch(doomedProcess);
@@ -412,6 +433,11 @@ public class Manager {
 	}
 
 	private static void runCreate(String[] cmdArray) {
+		if (cmdArray.length < 3) {
+			print("error");
+			noError = false;
+			return;
+		}
 		String name = cmdArray[1];
 		int priority = Integer.parseInt(cmdArray[2]);
 		Process newProcess = new Process(name, priority, runningProcess);
