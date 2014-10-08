@@ -126,6 +126,7 @@ public class Manager {
 					int unitsStillOccupied = unitsOccupied - unitsToRelease;
 					if (unitsStillOccupied < 0) {
 						println("error");
+						noError = false;
 					} else {
 						if (unitsStillOccupied > 0) {
 						mProcessesAttached.put(p.mName, new ProcessPair(p, unitsStillOccupied));
@@ -306,7 +307,7 @@ public class Manager {
 	public static void main(String[] args) {
 		runInit();
 		printRunningProcess();
-		while (true) {
+		while (sc.hasNext()) {
 			try {
 				String input = sc.nextLine();
 				parseInput(input);
